@@ -6,14 +6,27 @@ const app = express(); //a function which upon calling will add a bunch of metho
 //Include the mniddleware -> what gives us access to the request data for a post, from the client
 app.use(express.json()); //'express.json()' is middleware -> a funtion that can modify the incoming request data. A step that the request goes through to be processed
 
+app.use((req, res, next) => { //like this, Express knows that we are defining a middleware funtion in here. Wuth the 3rd  arameter, express passes the next function into the middleware function and we can use it whenever we want it
+    console.log("Hello from the middleware 😁! ");
+    next();
+});
+
+app.use((req, res, next) => { //like this, Express knows that we are defining a middleware funtion in here. Wuth the 3rd  arameter, express passes the next function into the middleware function and we can use it whenever we want it
+    req.requestTime = new Date().toISOString();
+    next();
+});
+
+
  // Sync, bc since it's a top level function, it will only be executed once and at the beginning of the node process
 const tours =  JSON.parse(
     fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
 );
 
 const getAllTours = (req, res) => {
+    console.log(req.requestTime);
     res.status(200).json({ //JSend format
         status: 'success',
+        requestedAt: req.requestTime,
         result: tours.length,
         data: {
             tours
@@ -114,7 +127,8 @@ app.
     .get(getTourById)
     .patch(updateTour)
     .delete(deleteTour)
-    
+
+
 
 //Start the server
 const port = 3000;
