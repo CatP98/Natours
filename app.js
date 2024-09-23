@@ -121,7 +121,7 @@ const deleteTour = (req, res) => {
 const getAllUsers = (req, res) => {
     res.status(500).json({
         status: "error",
-        message: "this route ius not yet defined"
+        message: "this route is not yet defined"
     });
 }
 
@@ -160,27 +160,34 @@ const deleteUser = (req, res) => {
 //app.delete('/api/v1/tours/:id', deleteTour);
 
 /////////////////////////////////////////////////////////////// 3. ROUTES ///////////////////////////////////////////////////////////////
-app
-    .route('/api/v1/tours')
+const tourRouter = express.Router();  //tourRouter is a middleware and we want to use this specific middleware for the '/api/v1/tours' url -> it's like creatin a sub-app. THhe tourRouter only runs in this route '/api/v1/tours'
+const userRouter = express.Router();
+
+tourRouter
+    .route('/')
     .get(getAllTours)
     .post(createTour);
 
-app
-    .route('/api/v1/tours/:id')
+    tourRouter
+    .route('/:id')
     .get(getTourById)
     .patch(updateTour)
     .delete(deleteTour);
 
-app
-    .route('/api/v1/users')
+    userRouter
+    .route('/')
     .get(getAllUsers)
     .post(createUser);
 
-app
-    .route('/api/v1/users/:id')
+    userRouter
+    .route('/:id')
     .get(getUser)
     .patch(upodateUser)
     .delete(deleteUser);
+
+//Mouting the Routers to the routes - linking the tour and user routers to the appropriate base routes.
+app.use('/api/v1/tours', tourRouter);
+app.use('/api/v1/users', userRouter);
 
 /////////////////////////////////////////////////////////////// 4. SERVER ///////////////////////////////////////////////////////////////
 const port = 3000;
