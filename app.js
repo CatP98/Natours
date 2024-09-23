@@ -11,9 +11,7 @@ const tours =  JSON.parse(
     fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
 );
 
-
-//The Route handler for a GET
-app.get('/api/v1/tours', (req, res) => {
+const getAllTours = (req, res) => {
     res.status(200).json({ //JSend format
         status: 'success',
         result: tours.length,
@@ -21,10 +19,9 @@ app.get('/api/v1/tours', (req, res) => {
             tours
         }
     });
-});
+};
 
-//Route Handler that accepts a variable
-app.get('/api/v1/tours/:id/:x?', (req, res) => {
+const getTourById = (req, res) => {
     //console.log(req.params); //re.params is where all the parameters defined in the url are stored
     const id = req.params.id * 1; //To convert the string id value that comes from the url, into a number
     const tour = tours.find(el => el.id === id); //find creates an array whit the key value of the matched results
@@ -36,17 +33,16 @@ app.get('/api/v1/tours/:id/:x?', (req, res) => {
             message: "Id Not Found"
         });
     }
-    
+
     res.status(200).json({
         status: "success",
        data: {
             tour
        }
     })
-});
+};
 
-//The Route Handler for a POST (to create a new tour)
-app.post('/api/v1/tours', (req, res) => {
+const createTour = (req, res) => {
     //console.log(req.body);
     // Generate new ID
     const newId = tours[tours.length - 1].id + 1;
@@ -69,9 +65,9 @@ app.post('/api/v1/tours', (req, res) => {
                 }
             })
         })
-});
+};
 
-app.patch('/api/v1/tours/:id', (req, res) => {
+const updateTour = (req, res) => {
     if(req.params.id * 1 > tours.length){ 
         return res.status(404).json({
             status: "fail",
@@ -85,9 +81,9 @@ app.patch('/api/v1/tours/:id', (req, res) => {
             tour: '<Updated Tour Here>' //placeholder
         }
     });
-})
+};
 
-app.delete('/api/v1/tours/:id', (req, res) => {
+const deleteTour = (req, res) => {
     if(req.params.id * 1 > tours.length){ 
         return res.status(404).json({
             status: "fail",
@@ -99,7 +95,26 @@ app.delete('/api/v1/tours/:id', (req, res) => {
         status: "success",
         data: null
     });
-})
+};
+
+//The Route handlers
+//app.get('/api/v1/tours', getAllTours);
+//app.get('/api/v1/tours/:id/:x?', getTourById);
+//app.post('/api/v1/tours', createTour);
+//app.patch('/api/v1/tours/:id', updateTour);
+//app.delete('/api/v1/tours/:id', deleteTour);
+
+app.
+    route('/api/v1/tours')
+    .get(getAllTours)
+    .post(createTour);
+
+app.
+    route('/api/v1/tours/:id')
+    .get(getTourById)
+    .patch(updateTour)
+    .delete(deleteTour)
+    
 
 //Start the server
 const port = 3000;
@@ -110,17 +125,3 @@ app.listen( port, () => {
 
 
 
-
-
-//Create the Routing -> to determine how an application responds to a certain cliemt request (a certain hhtp method + url)
-
-// app.get('/', (req, res) => {
-//     res
-//         .status(200)
-//         .json({message: 'Hello from the Server Side', app: 'Natours'}); //when calling json, the content-type of the response, will automatically be set to 'application/json;' by Express, no need to specify the type of the content so that the browser knows what to expect 
-
-// });
-
-// app.post('/', (req, res) => {
-//     res.send('You can post ro this endpoint...')
-// })
