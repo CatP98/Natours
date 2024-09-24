@@ -19,6 +19,36 @@ exports.checkId = ((req, res, next, val) => {
     }
     next();
 });
+exports.checkName = (req, res, next) => {
+    console.log(`Checking for 'name' in request body.`);
+    if (!req.body.name) {
+        return res.status(400).json({
+            status: "fail",
+            message: "Bad Request: You need a name to create a tour"
+        });
+    }
+    next();
+};
+
+exports.checkPrice = (req, res, next) => {
+    console.log(`Checking for 'price' in request body.`);
+    if (!req.body.price || isNaN(req.body.price * 1)) {
+        return res.status(400).json({
+            status: "fail",
+            message: "Bad Request: You need to provide a valid price"
+        });
+    }
+    next();
+};
+exports.checkBody = (req, res, val) => {
+    if(!!req.body.name ||req.body.price) {
+        return res.status(400).json({
+            status: "fail",
+            message: "Bad Request: Missing name or pricer"
+        })
+    }
+    next();
+}
 
 // ROUTE HANDLERS
 exports.getAllTours = (req, res) => {
