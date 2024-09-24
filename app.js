@@ -10,9 +10,14 @@ const app = express(); //a function which upon calling will add a bunch of metho
 //Include the mniddleware -> what gives us access to the request data for a post, from the client
 //These are the middlewares that we want to apply to all of our routes
 
-app.use(morgan('dev'));
+//o define a middle ware to just happen for a certain environment -> while the process is running, it's variables are common to all files, 
+//that's why we have access to them in here, eventhough we've defined them in the server.js
+if(process.env.NODE_ENV === 'development'){
+    app.use(morgan('dev'));
+}
 
 app.use(express.json()); //'express.json()' is middleware -> a funtion that can modify the incoming request data. A step that the request goes through to be processed
+app.use(express.static(`${__dirname}/public`));
 
 app.use((req, res, next) => { //like this, Express knows that we are defining a middleware funtion in here. Wuth the 3rd  arameter, express passes the next function into the middleware function and we can use it whenever we want it
     console.log("Hello from the middleware 😁! ");
