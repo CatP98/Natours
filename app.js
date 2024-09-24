@@ -10,6 +10,7 @@ const app = express(); //a function which upon calling will add a bunch of metho
 //Include the mniddleware -> what gives us access to the request data for a post, from the client
 //These are the middlewares that we want to apply to all of our routes
 
+console.log(process.env.NODE_ENV);
 //o define a middle ware to just happen for a certain environment -> while the process is running, it's variables are common to all files, 
 //that's why we have access to them in here, eventhough we've defined them in the server.js
 if(process.env.NODE_ENV === 'development'){
