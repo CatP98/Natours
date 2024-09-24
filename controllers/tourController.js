@@ -8,6 +8,18 @@ const router = express.Router();  //tourRouter is a middleware and we want to us
     fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
 );
 
+//Param middleware to check id
+exports.checkId = ((req, res, next, val) => {
+    console.log(`Tour id is : ${val}`);
+    if(req.params.id * 1 > tours.length){ 
+        return res.status(404).json({
+            status: "fail",
+            message: "Id Not Found"
+        });
+    }
+    next();
+});
+
 // ROUTE HANDLERS
 exports.getAllTours = (req, res) => {
     console.log(req.requestTime);
@@ -26,14 +38,6 @@ exports.getTourById = (req, res) => {
     const id = req.params.id * 1; //To convert the string id value that comes from the url, into a number
     const tour = tours.find(el => el.id === id); //find creates an array whit the key value of the matched results
     
-    //if(id > tours.length){ //alternative
-    if(!tour){
-        return res.status(404).json({
-            status: "fail",
-            message: "Id Not Found"
-        });
-    }
-
     res.status(200).json({
         status: "success",
        data: {
@@ -68,13 +72,6 @@ exports.createTour = (req, res) => {
 };
 
 exports.updateTour = (req, res) => {
-    if(req.params.id * 1 > tours.length){ 
-        return res.status(404).json({
-            status: "fail",
-            message: "Id Not Found"
-        });
-    }
-   
     res.status(200).json({
         status: "success",
         data: {
@@ -84,13 +81,6 @@ exports.updateTour = (req, res) => {
 };
 
 exports.deleteTour = (req, res) => {
-    if(req.params.id * 1 > tours.length){ 
-        return res.status(404).json({
-            status: "fail",
-            message: "Id Not Found"
-        });
-    }
-   
     res.status(204).json({ //204: no content
         status: "success",
         data: null
