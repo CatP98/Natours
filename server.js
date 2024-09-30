@@ -29,7 +29,7 @@ const tourSchema = new mongoose.Schema( {
     },
     price: {
         type: Number,
-        required: [, 'A tour must have a price']
+        required: [true, 'A tour must have a price']
     },
     rating: {
         type: Number,
@@ -40,6 +40,20 @@ const tourSchema = new mongoose.Schema( {
 //3. Create the model out of the defined schema
 const Tour = mongoose.model('Tour', tourSchema) // Convention, define the models in uppercase
 
+//4 .  Creting a new document, out of the Tour model -> testTour is an instance of Tour 
+const testTour = new Tour({
+    name: "The Camper",
+    price: 997
+});
+
+testTour
+    .save() // returns a promise
+    .then(doc => {
+    console.log(doc);
+    })
+    .catch(err => {
+        console.log('ERRORR 😱😱😱😱', err.message);
+    })
 
 ///////////////////////////////////////////////////////// 4. SERVER ///////////////////////////////////////////////////////////////
 const port = process.env.PORT || 3000;
