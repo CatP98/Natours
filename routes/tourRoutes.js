@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 const express = require('express');
 // eslint-disable-next-line import/no-useless-path-segments
 const tourController = require('./../controllers/tourController');
@@ -11,9 +12,9 @@ router
 	.route('/')
 	.get(tourController.getAllTours)
 	.post(
-		tourController.checkName,
-		tourController.checkPrice,
-		tourController.createTour,
+		// tourController.checkName,
+		// tourController.checkPrice,
+		tourController.createTour
 	);
 
 router
