@@ -97,7 +97,7 @@ exports.deleteTour = async(req, res) => {
     console.log(`1. ${await Tour.countDocuments()}`); // Count documents instead of length
 
     try {
-        const deletedTour = await Tour.findByIdAndDelete(req.params.id);
+        await Tour.findByIdAndDelete(req.params.id);
 
         res.status(200).json({
             status: 'success',
