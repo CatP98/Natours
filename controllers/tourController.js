@@ -1,16 +1,12 @@
-const fs = require('fs');
-const express = require('express');
+//const fs = require('fs');
+//const express = require('express');
 
-const router = express.Router();  //tourRouter is a middleware and we want to use this specific middleware for the '/api/v1/tours' url -> it's like creatin a sub-app. THhe tourRouter only runs in this route '/api/v1/tours'
-
- // Sync, bc since it's a top level function, it will only be executed once and at the beginning of the node process
- const tours =  JSON.parse( 
-    fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
-);
+const Tour = require('./../models/tourModel');
 
 //Param middleware to check id
-exports.checkId = ((req, res, next, val) => {
+exports.checkId = (req, res, next, val) => {
     console.log(`Tour id is : ${val}`);
+
     if(req.params.id * 1 > tours.length){ 
         return res.status(404).json({
             status: "fail",
@@ -18,9 +14,12 @@ exports.checkId = ((req, res, next, val) => {
         });
     }
     next();
-});
+};
+
+
 exports.checkName = (req, res, next) => {
     console.log(`Checking for 'name' in request body.`);
+
     if (!req.body.name) {
         return res.status(400).json({
             status: "fail",
@@ -32,6 +31,7 @@ exports.checkName = (req, res, next) => {
 
 exports.checkPrice = (req, res, next) => {
     console.log(`Checking for 'price' in request body.`);
+
     if (!req.body.price || isNaN(req.body.price * 1)) {
         return res.status(400).json({
             status: "fail",
@@ -56,49 +56,33 @@ exports.getAllTours = (req, res) => {
     res.status(200).json({ //JSend format
         status: 'success',
         requestedAt: req.requestTime,
-        result: tours.length,
-        data: {
-            tours
-        }
+        // result: tours.length,
+        // data: {
+        //     tours
+        // }
     });
 };
 
 exports.getTourById = (req, res) => {
     //console.log(req.params); //re.params is where all the parameters defined in the url are stored
     const id = req.params.id * 1; //To convert the string id value that comes from the url, into a number
-    const tour = tours.find(el => el.id === id); //find creates an array whit the key value of the matched results
+    // const tour = tours.find(el => el.id === id); //find creates an array with the key value of the matched results
     
-    res.status(200).json({
-        status: "success",
-       data: {
-            tour
-       }
-    })
+    // res.status(200).json({
+    //     status: "success",
+    //    data: {
+    //         tour
+    //    }
+    // })
 };
 
-exports.createTour = (req, res) => {
-    //console.log(req.body);
-    // Generate new ID
-    const newId = tours[tours.length - 1].id + 1;
-    
-    // Create a new tour object with the new ID and the data from req.body
-    const newTour = Object.assign({ id: newId }, req.body);
-
-    // Add the new tour to the tours array
-    tours.push(newTour); // now the array include the new tour
-
-    //In order to persist that new tour in our tours-simple.json:
-    fs.writeFile(
-        `${__dirname}/dev-data/data/tours-simple.json`,
-        JSON.stringify(tours), 
-        err => {
-            res.status(201).json({
-                status: "success",
-                data: {
-                    tour: newTour
-                }
-            })
-        })
+ exports.createTour = (req, res) => {
+//     res.status(201).json({
+//         status: "success",
+//         data: {
+//             tour: newTour
+//         }
+//     })
 };
 
 exports.updateTour = (req, res) => {
@@ -116,3 +100,12 @@ exports.deleteTour = (req, res) => {
         data: null
     });
 };
+
+
+
+// WHen it was used a JSON file with the data:
+// Sync, bc since it's a top level function, it will only be executed once and at the beginning of the node process
+//  const tours =  JSON.parse( 
+//     fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
+// );
+//const router = express.Router();  //tourRouter is a middleware, and we want to use this specific middleware for the '/api/v1/tours' url -> it's like creating a sub-app. THhe tourRouter only runs in this route '/api/v1/tours'
