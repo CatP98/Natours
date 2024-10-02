@@ -81,7 +81,7 @@ exports.updateTour = async(req, res) => {
             status: 'success',
             data: {
                 tour
-            },
+            }
         });
 
     } catch (err) {
