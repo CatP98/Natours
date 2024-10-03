@@ -43,6 +43,8 @@ exports.getAllTours = async (req, res) => {
         }
     
         // 3) FIELD LIMITING
+        // /tours?fields=name,duration
+
         if(req.query.fields){
             console.log(req.query.fields);
             const fields = req.query.fields.split(',').join(' ');
@@ -52,6 +54,21 @@ exports.getAllTours = async (req, res) => {
             query.select(['-__v', '-_id']);
         }
 
+
+        // 4) PAGINATION
+        // /tours?page=2&limit=5
+        const page = req.query.page * 1 || 1;
+        const limit = req.query.limit * 1 || 100;
+        const skip = (page - 1) * limit;
+
+        query = query. skip(skip).limit(limit);
+
+        if(req.query.page){
+            const numTours = await Tour.countDocuments(); 
+            if(skip >= numTours) {
+                throw new Error( 'This page does not exist!' );
+            }
+        }
 
         // EXECUTE THE QUERY
         const tours = await query;
