@@ -5,13 +5,20 @@
 // eslint-disable-next-line import/no-useless-path-segments, no-unused-vars
 const Tour = require('./../models/tourModel');
 
+exports.aliasTopTours = (req, res, next) => {
+    console.log('midlleware of top 5 here');
+    req.query.limit = '5';
+    req.query.sort = '-ratingsAverage,price';
+    req.query.fields = 'name,price,difficulty,summary';
+    next();
+}
+
 // ROUTE HANDLERS
 exports.getAllTours = async (req, res) => {
 	// const param = req.query.VALUE;
     // console.log(param);
 
     try {
-
         // BUILD THE QUERY
         // 1A) Filtering
         const  queryObj = {...req.query};

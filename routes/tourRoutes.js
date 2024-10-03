@@ -5,7 +5,6 @@ const tourController = require('./../controllers/tourController');
 
 const router = express.Router(); //tourRouter is a middleware and we want to use this specific middleware for the '/api/v1/tours' url -> it's like creatin a sub-app. THhe tourRouter only runs in this route '/api/v1/tours'
 
-//router.param('id', tourController.checkId);
 
 // ROUTES
 router
@@ -16,6 +15,10 @@ router
 		// tourController.checkPrice,
 		tourController.createTour
 	);
+
+router
+	.route('/top-5-cheap')
+	.get(tourController.aliasTopTours, tourController.getAllTours);
 
 router
 	.route('/:id')
