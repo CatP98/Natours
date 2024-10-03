@@ -13,13 +13,24 @@ exports.getAllTours = async (req, res) => {
     try {
 
         // BUILD THE QUERY
+        // 1) Filtering
         const  queryObj = {...req.query};
         const excludedFields = ['page', 'fields', 'limit', 'sort'];
 
         excludedFields.forEach(el => delete queryObj[el]) // Loop through the excludedFields array and delete those keys from queryObj
-        console.log(req.query, queryObj);
+        console.log(queryObj);
 
-        const query = Tour.find(queryObj); //find() returns an array of all of the documents and converts them into javascript objects
+        // rep.query from 127.0.0.1:3000/api/v1/tours?duration[gte]=5
+        // - what we get: {duration: { 'gte' : '5'}} 
+        // - what we want, in order to beexecuted by MongoDB: what we get: {duration: { $gte : 5}}
+        // we need to replace - gte, gt, lt, lte - by - $gte, $gt, etc..
+
+        // 2) Advanced Filtering
+        let queryStr = JSON.stringify(queryObj);
+        queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
+        console.log(JSON.parse(queryStr));
+
+        const query = Tour.find(JSON.parse(queryStr)); //find() returns an array of all of the documents and converts them into javascript objects
 
         // EXECUTE THE QUERY
         const tours = await query;
