@@ -13,7 +13,7 @@ exports.getAllTours = async (req, res) => {
     try {
 
         // BUILD THE QUERY
-        // 1) Filtering
+        // 1A) Filtering
         const  queryObj = {...req.query};
         const excludedFields = ['page', 'fields', 'limit', 'sort'];
 
@@ -22,16 +22,26 @@ exports.getAllTours = async (req, res) => {
 
         // rep.query from 127.0.0.1:3000/api/v1/tours?duration[gte]=5
         // - what we get: {duration: { 'gte' : '5'}} 
-        // - what we want, in order to beexecuted by MongoDB: what we get: {duration: { $gte : 5}}
+        // - what we want, in order to be executed by MongoDB: {duration: { $gte : 5}}
         // we need to replace - gte, gt, lt, lte - by - $gte, $gt, etc..
 
-        // 2) Advanced Filtering
+        // 1B) Advanced Filtering
         let queryStr = JSON.stringify(queryObj);
         queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
         console.log(JSON.parse(queryStr));
 
-        const query = Tour.find(JSON.parse(queryStr)); //find() returns an array of all of the documents and converts them into javascript objects
+        let query = Tour.find(JSON.parse(queryStr)); // find() does not return the documents themselves, instead Tour.find() returns a Query object, on which we can further use methods like, sort(), limit(), etc -> Mongoose methods 
+        // 2) SORT
 
+        if(req.query.sort){
+            console.log(req.query.sort);
+            const sortBy = req.query.sort.split(',').join(' ');
+            query = query.sort(sortBy)
+            //-In case we have tied price results and we want another field to serve as second criteria,  In mongoose, the sructure of the query would be sort('price ratingsaVERAGE') - (but since the space it's not supported in the url, we'll use a comma there, and in our code replace it by the space)
+        } else {
+            query = query.sort('-createdAt')
+        }
+    
         // EXECUTE THE QUERY
         const tours = await query;
 
