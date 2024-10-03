@@ -7,10 +7,24 @@ const Tour = require('./../models/tourModel');
 
 // ROUTE HANDLERS
 exports.getAllTours = async (req, res) => {
-	
-    try {
-        const tours = await Tour.find(); //find() returns an array of all of the documents and converts them into javascript objects
+	// const param = req.query.VALUE;
+    // console.log(param);
 
+    try {
+
+        // BUILD THE QUERY
+        const  queryObj = {...req.query};
+        const excludedFields = ['page', 'fields', 'limit', 'sort'];
+
+        excludedFields.forEach(el => delete queryObj[el]) // Loop through the excludedFields array and delete those keys from queryObj
+        console.log(req.query, queryObj);
+
+        const query = Tour.find(queryObj); //find() returns an array of all of the documents and converts them into javascript objects
+
+        // EXECUTE THE QUERY
+        const tours = await query;
+
+        // SEND RESPONSE
         res.status(200).json({
             // JSend format
             status: 'success',
