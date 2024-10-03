@@ -31,17 +31,28 @@ exports.getAllTours = async (req, res) => {
         console.log(JSON.parse(queryStr));
 
         let query = Tour.find(JSON.parse(queryStr)); // find() does not return the documents themselves, instead Tour.find() returns a Query object, on which we can further use methods like, sort(), limit(), etc -> Mongoose methods 
+        
         // 2) SORT
-
         if(req.query.sort){
             console.log(req.query.sort);
             const sortBy = req.query.sort.split(',').join(' ');
             query = query.sort(sortBy)
-            //-In case we have tied price results and we want another field to serve as second criteria,  In mongoose, the sructure of the query would be sort('price ratingsaVERAGE') - (but since the space it's not supported in the url, we'll use a comma there, and in our code replace it by the space)
+            // In case we have a tie between price results and we want another field to serve as second criteria,  In mongoose, the sructure of the query would be sort('price ratingsaVERAGE') - (but since the space it's not supported in the url, we'll use a comma there, and in our code replace it by the space)
         } else {
             query = query.sort('-createdAt')
         }
     
+        // 3) FIELD LIMITING
+        if(req.query.fields){
+            console.log(req.query.fields);
+            const fields = req.query.fields.split(',').join(' ');
+            console.log(fields);
+            query = query.select(fields);
+        } else {
+            query.select(['-__v', '-_id']);
+        }
+
+
         // EXECUTE THE QUERY
         const tours = await query;
 
