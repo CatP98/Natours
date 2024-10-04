@@ -2,7 +2,6 @@ const mongoose = require('mongoose'); //to interact with the MongoDB database.
 const dotenv = require('dotenv'); // loads environment variables from the .env file
 const fs = require('fs'); //to read files from the file system
 
-// eslint-disable-next-line import/no-useless-path-segments
 const Tour = require('./../../models/tourModel'); // Tour model is imported from tourModel.js and will represent the tour data in MongoDB
 
 dotenv.config({ path: './config.env' }); //Environment variables are loaded using dotenv.config(), which fetches values like the database URL from a .env file

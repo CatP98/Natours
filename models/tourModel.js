@@ -54,7 +54,7 @@ const tourSchema = new mongoose.Schema({
 		default: Date.now(),
 		select: false
 	},
-	startDate: [Date]
+	startDates: [Date]
 });
 
 // Create the model out of the defined schema
