@@ -133,6 +133,45 @@ exports.deleteTour = async(req, res) => {
     console.log(`1. ${await Tour.countDocuments()}`); // Count documents instead of length
 };
 
+exports.getTourStats = async ( req, res ) => { //
+    try{  //we can manipulate the data in different steps. We define those steps by passing to aggreggarte method, an array of stages. Then the documents pass through this stages, one by one, step by step in the defined sequence
+        const stats = await Tour.aggregate([
+            {
+                $match : {ratingsAverage: {$gte: 4.5}}
+            },
+            {
+                $group : {
+                    _id: {$toUpper:'$difficulty'},
+                    avgRating: {$avg: '$ratingsAverage'},
+                    numRatings: {$sum: '$ratingsQuantity'},
+                    numTours: {$sum: 1},
+                    avgPrice: {$avg: '$price'},
+                    minPrice: {$min: '$price'},
+                    maxPrice: {$max: '$price'}
+                }
+            },
+            {
+                $sort: { avgPrice: 1 }
+                // $sort: { avgPrice: -1 } 
+            },
+            // {
+            //     $match : { _id: { $ne: 'EASY' }}  //exclude the one that says easy
+            // }
+        ])
+
+        res.status(200).json({
+            status: 'success',
+            data: stats
+        })
+        
+    } catch (err) {
+        res.status(400).json({
+            status: 'fail',
+            message: err
+        });
+    }    
+}
+
 //
 //
 //
