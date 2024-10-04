@@ -4,14 +4,15 @@
 
 // eslint-disable-next-line import/no-useless-path-segments, no-unused-vars
 const Tour = require('./../models/tourModel');
+const APIFeatures = require('./../utils/apiFeatures')
 
 exports.aliasTopTours = (req, res, next) => {
-    console.log('midlleware of top 5 here');
     req.query.limit = '5';
     req.query.sort = '-ratingsAverage,price';
     req.query.fields = 'name,price,difficulty,summary';
     next();
 }
+
 
 // ROUTE HANDLERS
 exports.getAllTours = async (req, res) => {
@@ -19,66 +20,15 @@ exports.getAllTours = async (req, res) => {
     // console.log(param);
 
     try {
-        // BUILD THE QUERY
-        // 1A) Filtering
-        const  queryObj = {...req.query};
-        const excludedFields = ['page', 'fields', 'limit', 'sort'];
-
-        excludedFields.forEach(el => delete queryObj[el]) // Loop through the excludedFields array and delete those keys from queryObj
-        console.log(queryObj);
-
-        // rep.query from 127.0.0.1:3000/api/v1/tours?duration[gte]=5
-        // - what we get: {duration: { 'gte' : '5'}} 
-        // - what we want, in order to be executed by MongoDB: {duration: { $gte : 5}}
-        // we need to replace - gte, gt, lt, lte - by - $gte, $gt, etc..
-
-        // 1B) Advanced Filtering
-        let queryStr = JSON.stringify(queryObj);
-        queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
-        console.log(JSON.parse(queryStr));
-
-        let query = Tour.find(JSON.parse(queryStr)); // find() does not return the documents themselves, instead Tour.find() returns a Query object, on which we can further use methods like, sort(), limit(), etc -> Mongoose methods 
         
-        // 2) SORT
-        if(req.query.sort){
-            console.log(req.query.sort);
-            const sortBy = req.query.sort.split(',').join(' ');
-            query = query.sort(sortBy)
-            // In case we have a tie between price results and we want another field to serve as second criteria,  In mongoose, the sructure of the query would be sort('price ratingsaVERAGE') - (but since the space it's not supported in the url, we'll use a comma there, and in our code replace it by the space)
-        } else {
-            query = query.sort('-createdAt')
-        }
-    
-        // 3) FIELD LIMITING
-        // /tours?fields=name,duration
-
-        if(req.query.fields){
-            console.log(req.query.fields);
-            const fields = req.query.fields.split(',').join(' ');
-            console.log(fields);
-            query = query.select(fields);
-        } else {
-            query.select(['-__v', '-_id']);
-        }
-
-
-        // 4) PAGINATION
-        // /tours?page=2&limit=5
-        const page = req.query.page * 1 || 1;
-        const limit = req.query.limit * 1 || 100;
-        const skip = (page - 1) * limit;
-
-        query = query. skip(skip).limit(limit);
-
-        if(req.query.page){
-            const numTours = await Tour.countDocuments(); 
-            if(skip >= numTours) {
-                throw new Error( 'This page does not exist!' );
-            }
-        }
-
         // EXECUTE THE QUERY
-        const tours = await query;
+        const features = new APIFeatures(Tour.find(), req.query)
+            .filter()
+            .sort()
+            .limitFields()
+            .paginate();
+
+        const tours = await features.query;
 
         // SEND RESPONSE
         res.status(200).json({
@@ -185,6 +135,9 @@ exports.deleteTour = async(req, res) => {
 
 //
 //
+//
+//
+//
 // WHen it was used a JSON file with the data:
 // Sync, bc since it's a top level function, it will only be executed once and at the beginning of the node process
 //  const tours =  JSON.parse(
@@ -272,3 +225,62 @@ exports.deleteTour = async(req, res) => {
 // 	//     }
 // 	// });
 // };
+
+
+// BUILD THE QUERY
+        // 1A) Filtering
+        // const  queryObj = {...req.query};
+        // const excludedFields = ['page', 'fields', 'limit', 'sort'];
+
+        // excludedFields.forEach(el => delete queryObj[el]) // Loop through the excludedFields array and delete those keys from queryObj
+        // console.log(queryObj);
+
+        // // rep.query from 127.0.0.1:3000/api/v1/tours?duration[gte]=5
+        // // - what we get: {duration: { 'gte' : '5'}} 
+        // // - what we want, in order to be executed by MongoDB: {duration: { $gte : 5}}
+        // // we need to replace - gte, gt, lt, lte - by - $gte, $gt, etc..
+
+        // // 1B) Advanced Filtering
+        // let queryStr = JSON.stringify(queryObj);
+        // queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
+        // console.log(JSON.parse(queryStr));
+
+        //let query = Tour.find(JSON.parse(queryStr)); // find() does not return the documents themselves, instead Tour.find() returns a Query object, on which we can further use methods like, sort(), limit(), etc -> Mongoose methods 
+        
+        // // 2) SORT
+        // if(req.query.sort){
+        //     console.log(req.query.sort);
+        //     const sortBy = req.query.sort.split(',').join(' ');
+        //     query = query.sort(sortBy)
+        //     // In case we have a tie between price results and we want another field to serve as second criteria,  In mongoose, the sructure of the query would be sort('price ratingsaVERAGE') - (but since the space it's not supported in the url, we'll use a comma there, and in our code replace it by the space)
+        // } else {
+        //     query = query.sort('-createdAt')
+        // }
+    
+        // // 3) FIELD LIMITING
+        // // /tours?fields=name,duration
+
+        // if(req.query.fields){
+        //     console.log(req.query.fields);
+        //     const fields = req.query.fields.split(',').join(' ');
+        //     console.log(fields);
+        //     query = query.select(fields);
+        // } else {
+        //     query.select(['-__v', '-_id']);
+        // }
+
+
+        // // 4) PAGINATION
+        // // /tours?page=2&limit=5
+        // const page = req.query.page * 1 || 1;
+        // const limit = req.query.limit * 1 || 100;
+        // const skip = (page - 1) * limit;
+
+        // query = query. skip(skip).limit(limit);
+
+        // if(req.query.page){
+        //     const numTours = await Tour.countDocuments(); 
+        //     if(skip >= numTours) {
+        //         throw new Error( 'This page does not exist!' );
+        //     }
+        // }
