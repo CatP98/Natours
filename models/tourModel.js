@@ -1,4 +1,6 @@
+/* eslint-disable prefer-arrow-callback */
 const mongoose = require('mongoose');
+const slugify = require('slugify');
 
 // Set the Schema
 const tourSchema = new mongoose.Schema(
@@ -9,6 +11,7 @@ const tourSchema = new mongoose.Schema(
 			// eslint-disable-next-line prettier/prettier
 			unique: true
 		},
+		slug: String,
 		duration: {
 			type: Number,
 			// eslint-disable-next-line prettier/prettier
@@ -71,6 +74,24 @@ const tourSchema = new mongoose.Schema(
 tourSchema.virtual('durationWeeks').get(function () {
 	//Using the regular function, because an arrow function does not get access to the this keyword. The this will be pointing to the current document
 	return this.duration / 7;
+});
+// DOCUMENT MIDDLEWARE,
+// PRE-HOOKS: runs before .save() and .create() (other  like insertMant() for example will not trigger the function callback)
+tourSchema.pre('save', function (next) {
+	this.slug = slugify(this.name, { lower: true });
+	next();
+});
+
+tourSchema.pre('save', (next) => {
+	console.log('Will save document...');
+	next();
+});
+
+// POST-HOOKS: Post middleware functions are executed after all the pre middleware functions have completed
+tourSchema.post('save', function (doc, next) {
+	//This post function gets access not only to the next method , but also to the just processed document
+	console.log(doc);
+	next();
 });
 
 // Create the model out of the defined schema
