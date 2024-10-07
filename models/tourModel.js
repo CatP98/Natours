@@ -80,7 +80,17 @@ tourSchema.virtual('durationWeeks').get(function () {
 	return this.duration / 7;
 });
 
-//QUERY DOCUMENT
+//Mongoose middleware:
+
+//  AGGREGATION MIDDLEWARE
+tourSchema.pre('aggregate', function (next) {
+	console.log(this.pipeline()); // presents an array with the match, group and sort stages
+	this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+	console.log(this.pipeline()); //this time, it presents 2 match stages + 1 group and 1 sort
+	next();
+});
+
+// QUERY DOCUMENT
 tourSchema.pre('find', function (next) {
 	console.log('====================');
 	console.log('Query middleware, here is the this, the query object: ');
@@ -92,27 +102,19 @@ tourSchema.pre('find', function (next) {
 	next();
 });
 
-// tourSchema.pre('find', function (next) {
-// 	this.find({ secretTourTour: { $ne: true } });
-// 	next();
-// });
-
-//the query middleware creates a query object, and from the moment of the pre hook until the post hook of a certain query, we get access to the same query object, with its set properties and methods, that we can use/access anytime we want in this process
 tourSchema.pre(/^find/, function (next) {
 	this.find({ secretTour: { $ne: true } });
 
-	this.start = Date.now(); //Setting a property with the time the object was creted and store it in the object on the 'start' attribute
+	this.start = Date.now();
 	next();
 });
 
 tourSchema.post(/^find/, function (docs, next) {
-	console.log(`This query took ${Date.now() - this.start} miliseconds`); //This will log the time it took from the moment the find query was triggered (right before the query got executes), until the moment the query finnished executing and, therefore, started the post middleware
-	console.log(docs); // This will  log to the console all the documents that resulted in the query that started with 'find'
+	console.log(`This query took ${Date.now() - this.start} miliseconds`);
 	next();
 });
 
 // DOCUMENT MIDDLEWARE,
-// PRE-HOOKS: runs before .save() and .create() (other  like insertMant() for example will not trigger the function callback)
 tourSchema.pre('save', function (next) {
 	this.slug = slugify(this.name, { lower: true });
 	next();
@@ -123,7 +125,6 @@ tourSchema.pre('save', (next) => {
 	next();
 });
 
-// POST-HOOKS: Post middleware functions are executed after all the pre middleware functions have completed
 tourSchema.post('save', function (doc, next) {
 	//This post function gets access not only to the next method , but also to the just processed document
 	console.log(doc);
