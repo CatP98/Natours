@@ -1,6 +1,7 @@
 /* eslint-disable prefer-arrow-callback */
 const mongoose = require('mongoose');
 const slugify = require('slugify');
+const validator = require('validator');
 
 // Set the Schema
 const tourSchema = new mongoose.Schema(
@@ -10,7 +11,15 @@ const tourSchema = new mongoose.Schema(
 			required: [true, 'A tour must have a name'],
 			unique: true,
 			maxLength: [40, 'A tour name contain maximum 40 characters'],
-			minLength: [10, 'A tour name must contain at leat 10 characters']
+			minLength: [10, 'A tour name must contain at leat 10 characters'],
+			validate: {
+				validator: function (val) {
+					// Use validator.isAlpha to ensure the name contains only alphabetic characters -> from validator npm package
+					return validator.isAlpha(val, 'en-US', { ignore: ' ' }); // Allows spaces between words
+				},
+				message:
+					'A tour name must contain only alphabetic characters and spaces'
+			}
 		},
 		slug: String,
 		duration: {
@@ -42,7 +51,16 @@ const tourSchema = new mongoose.Schema(
 			type: Number,
 			default: 0
 		},
-		priceDiscount: Number,
+		priceDiscount: {
+			type: Number,
+			validate: {
+				validator: function (val) {
+					return val < this.price; // Note: the this kword is only pointing to the current doc, whe we are creating a new doc
+				},
+				message:
+					"The discount price should be below the tour's regular price, got {VALUE}."
+			}
+		},
 		summary: {
 			type: String,
 			trim: true,
